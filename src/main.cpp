@@ -5,13 +5,15 @@
 #include <WebSocketsServer.h>
 #include <WebServer.h>
 
+
 //declaring the func i mad below
 void parseData(char* data);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
+  void motorConttrol(int leftspeed, int rightspeed);
 
 
 // initialize the WebSocket server
-
+WebServer server(80);
 WebSocketsServer webSocket(81);
 
 
@@ -116,9 +118,9 @@ const int LM_in1 = 12;
 const int LM_in2 = 13;
 const int LM_Speed = 14;
 //pins for the right side motors
-const int RM_in1= 11;
-const int RM_in2= 10;
-const int RM_Speed= 9;
+const int RM_in1= 25;
+const int RM_in2= 26;
+const int RM_Speed= 27;
 
 void setup()
 {
@@ -134,8 +136,15 @@ void setup()
     pinMode(RM_in2, OUTPUT);
     pinMode(RM_Speed, OUTPUT);
 
-    WiFi.softAP(ssid, password);
+   WiFi.softAP(ssid, password);
     Serial.println(WiFi.softAPIP());
+
+    server.on("/", HTTP_GET, []()
+    {
+        server.send(200, "text/html", index_html);
+    });
+
+    server.begin();
 
     webSocket.begin();
    webSocket.onEvent(webSocketEvent);
@@ -145,7 +154,11 @@ void setup()
 void loop()
 {
 
+    server.handleClient();
      webSocket.loop();
+
+    
+        
 
 }
 
@@ -161,17 +174,22 @@ void loop()
 
         if  (commaPosition !=NULL)
         {
-            *commaPosition ='/0';
+            *commaPosition = '\0';
 
 
             leftspeed = atoi(data);
             rightspeed = atoi(commaPosition + 1);
-        }    
 
-            Serial.print("left;");
+             Serial.print("left;");
             Serial.print(leftspeed);
             Serial.print("right;");
             Serial.println(rightspeed);
+
+        }     
+
+            
+
+           
 
         
 
@@ -187,7 +205,7 @@ void loop()
         break;
 
         case WStype_DISCONNECTED:
-        Serial.println("disconnectedd");
+        Serial.println("disconnected");
         break;
 
         case WStype_TEXT:
@@ -195,7 +213,55 @@ void loop()
         break;
 
     }
-
-
-
    }
+
+   void motorConttrol(int leftspeed, int rightspeed)
+   {
+
+        //control for left motor
+        if (leftspeed<0)
+        {
+            digitalWrite(LM_in1, HIGH);
+            digitalWrite(LM_in2, LOW);
+            analogWrite(LM_Speed, abs(leftspeed));
+        }
+        else if (leftspeed>0)
+        {
+            digitalWrite(LM_in1, LOW);
+            digitalWrite(LM_in2, HIGH);
+            analogWrite(LM_Speed, (leftspeed));
+        } 
+        else
+        {
+            digitalWrite(LM_in1, LOW);
+            digitalWrite(LM_in2, LOW);
+            analogWrite(LM_Speed, leftspeed);   
+        }
+
+
+        //control for the right motor
+        if (rightspeed>0)
+        {
+            digitalWrite(RM_in1, HIGH);
+            digitalWrite(RM_in2, LOW);
+            analogWrite(RM_Speed, rightspeed);
+        }
+        else if (rightspeed<0)
+        {
+            digitalWrite(RM_in1, LOW);
+            digitalWrite(RM_in2, HIGH);
+            analogWrite(RM_Speed, abs(rightspeed));
+        }
+        else
+        {
+            digitalWrite(RM_in1, LOW);
+            digitalWrite(RM_in2, HIGH);
+            analogWrite(RM_Speed, abs(rightspeed));
+        }
+
+
+    }
+
+
+
+   
