@@ -156,9 +156,7 @@ void loop()
 
     server.handleClient();
      webSocket.loop();
-
-    
-        
+     motorConttrol(leftspeed, rightspeed);        
 
 }
 
@@ -229,13 +227,13 @@ void loop()
         {
             digitalWrite(LM_in1, LOW);
             digitalWrite(LM_in2, HIGH);
-            analogWrite(LM_Speed, (leftspeed));
+            analogWrite(LM_Speed, leftspeed);
         } 
         else
         {
             digitalWrite(LM_in1, LOW);
             digitalWrite(LM_in2, LOW);
-            analogWrite(LM_Speed, leftspeed);   
+            analogWrite(LM_Speed, 0);   
         }
 
 
@@ -252,11 +250,11 @@ void loop()
             digitalWrite(RM_in2, HIGH);
             analogWrite(RM_Speed, abs(rightspeed));
         }
-        else
+       else
         {
             digitalWrite(RM_in1, LOW);
-            digitalWrite(RM_in2, HIGH);
-            analogWrite(RM_Speed, abs(rightspeed));
+            digitalWrite(RM_in2, LOW);
+            analogWrite(RM_Speed, 0);
         }
 
 
